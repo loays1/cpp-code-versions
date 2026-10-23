@@ -1,0 +1,53 @@
+# Compilers and generated build output
+*.exe
+*.dll
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.pdb
+*.ilk
+*.pch
+*.gch
+*.out
+*.class
+*.pyc
+/build/
+/dist/
+/out/
+/Debug/
+/Release/
+/cmake-build-*/
+node_modules/
+.cache/
+.vs/
+# Local durable queue, credentials scanner, logs, original setup backup
+.cpp-backup/
+# CPH local test data
+.cph/
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.bak
+*.swp
+*~
+.DS_Store
+Thumbs.db
+# Secrets and credentials (never add these)
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+id_rsa*
+id_ed25519*
+credentials*
+secrets*
+*.credentials.json
+*.secrets.json

@@ -1,0 +1,4 @@
+{
+  "search.exclude": {"**/versions": true, "**/.cpp-backup": true},
+  "files.watcherExclude": {"**/versions/**": true, "**/.cpp-backup/**": true}
+}

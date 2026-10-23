@@ -1,0 +1,2 @@
+# Preserve the exact bytes of source snapshots, including their original line endings.
+versions/*.cpp -text
