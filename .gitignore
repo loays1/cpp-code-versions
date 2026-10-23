@@ -51,3 +51,6 @@ credentials*
 secrets*
 *.credentials.json
 *.secrets.json
+# Keep editor/build configuration local; source files retain their original paths.
+/.vscode/*
+!/.vscode/*.cpp

@@ -1,7 +1,7 @@
 {
   "name": "cpp-snapshot-backup",
   "displayName": "C++ Snapshot Backup",
-  "description": "Durable per-save C++ snapshots and serialized private GitHub publishing for this project.",
+  "description": "Durable per-save C++ snapshots and serialized GitHub publishing for this project.",
   "version": "1.0.0",
   "publisher": "local-cpp-tools",
   "engines": {"vscode": "^1.90.0"},

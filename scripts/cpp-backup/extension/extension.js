@@ -7,7 +7,7 @@ function activate(context) {
   const output = vscode.window.createOutputChannel('C++ Backup');
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 20);
   status.command = 'cppBackup.showLog';
-  status.text = '$(cloud) C++ Backup'; status.tooltip = 'Automatic snapshots and private GitHub publishing'; status.show();
+  status.text = '$(cloud) C++ Backup'; status.tooltip = 'Automatic snapshots and GitHub publishing'; status.show();
   let running = false, pending = false, lastError = '';
   function publish() {
     if (!fs.existsSync(path.join(ROOT,'.cpp-backup','config.json'))) return;
