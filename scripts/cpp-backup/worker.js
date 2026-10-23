@@ -46,7 +46,7 @@ try {
     const event = JSON.parse(fs.readFileSync(eventFile, 'utf8'));
     if (!/^\d{17}_\d{6}_[a-f0-9]{16}$/.test(event.id) || name !== event.id + '.json') throw new Error('Invalid queue identifier.');
     const relative = event.relative;
-    if (typeof relative !== 'string' || relative.includes('..') || path.isAbsolute(relative) || !/\.cpp$/i.test(relative) || /^(versions|\.git|\.cpp-backup)\//i.test(relative)) throw new Error('Invalid queued source path.');
+    if (typeof relative !== 'string' || relative.split(/[\\/]/).includes('..') || path.isAbsolute(relative) || !/\.cpp$/i.test(relative) || /^(versions|\.git|\.cpp-backup)\//i.test(relative)) throw new Error('Invalid queued source path.');
     const bytes = Buffer.from(event.content, 'base64');
     const digest = hash(bytes), key = relative.toLowerCase(), sourceId = hash(key).slice(0,12);
     const previous = state.files[key];
@@ -74,7 +74,7 @@ try {
     log('Publishing temporarily paused; snapshots are safe locally.'); process.exit(0);
   }
   if (git(['branch','--show-current']) !== config.branch) throw new Error('Current branch is not ' + config.branch + '; preserving snapshots without switching branches.');
-  if (git(['remote','get-url',config.remote]) !== config.remoteUrl) throw new Error('Remote URL changed; refusing to send source to an unverified destination.');
+  if (git(['remote','get-url',config.remote]) !== config.remoteUrl || git(['remote','get-url','--push',config.remote]) !== config.remoteUrl) throw new Error('Remote URL changed; refusing to send source to an unverified destination.');
   // Commit only generated, still-untracked snapshots. Never stage arbitrary project files or deletions.
   const candidates = new Set([
     ...git(['ls-files','--others','--exclude-standard','--','versions/']).split('\n'),
