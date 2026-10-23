@@ -109,7 +109,7 @@ try {
   if (blockedCount) process.exitCode = 2;
 } catch (error) {
   const message = String(error.message).replace(/https:\/\/[^\s/@]+:[^\s/@]+@/g,'https://[redacted]@');
-  log('ERROR: ' + message + ' Snapshots retained; automatic retry in 60 seconds while VS Code is open.');
+  log('ERROR: ' + message + ' Snapshots retained; press Ctrl+Alt+U to retry.');
   atomic(path.join(local,'status.json'), JSON.stringify({ok:false,at:new Date().toISOString(),message}));
   process.exitCode = 1;
 }

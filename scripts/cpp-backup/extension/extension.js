@@ -7,7 +7,7 @@ function activate(context) {
   const output = vscode.window.createOutputChannel('C++ Backup');
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 20);
   status.command = 'cppBackup.showLog';
-  status.text = '$(cloud) C++ Backup'; status.tooltip = 'Automatic snapshots and GitHub publishing'; status.show();
+  status.text = '$(cloud) C++ Backup'; status.tooltip = 'Ctrl+Alt+U: save, snapshot and upload. Ctrl+S saves locally only.'; status.show();
   let running = false, pending = false, lastError = '';
   function publish() {
     if (!fs.existsSync(path.join(ROOT,'.cpp-backup','config.json'))) return;
@@ -26,26 +26,29 @@ function activate(context) {
       running=false;
       let result;
       try { result=JSON.parse(fs.readFileSync(path.join(ROOT,'.cpp-backup','status.json'),'utf8')); } catch {}
-      if (code && !result) error('Publisher failed. Local saves are queued; retrying automatically.');
+      if (code && !result) error('Publisher failed. Requested snapshots are queued; press Ctrl+Alt+U to retry.');
       else if (result && !result.ok) error(result.message);
       else {lastError='';status.text='$(cloud-upload) C++ Backup';status.tooltip=result?.message || 'Ready';}
       if (pending) setTimeout(publish,100);
     });
   }
   context.subscriptions.push(output,status,
-    vscode.workspace.onDidSaveTextDocument(doc=>{
-      if (doc.uri.scheme !== 'file') return;
+    vscode.commands.registerCommand('cppBackup.upload',async()=>{
+      const doc = vscode.window.activeTextEditor?.document;
+      if (!doc || doc.uri.scheme !== 'file') return;
+      const relative = path.relative(ROOT,doc.uri.fsPath);
+      if (relative.startsWith('..') || path.isAbsolute(relative) || !/\.cpp$/i.test(relative) || /^(versions|\.cpp-backup|\.git)[\\/]/i.test(relative)) {
+        vscode.window.showWarningMessage('Open a C++ source file inside problem solving to upload.'); return;
+      }
       try {
+        if (!(await doc.save())) throw new Error('Saving the active file failed.');
         const id = capture(ROOT,doc.uri.fsPath);
-        if (id) {output.appendLine('Captured save: '+doc.uri.fsPath);publish();}
+        if (id) {output.appendLine('Upload requested: '+doc.uri.fsPath);publish();}
       } catch(e) { output.appendLine('CAPTURE ERROR: '+e.message);vscode.window.showErrorMessage('C++ Backup could not capture this save: '+e.message); }
     }),
     vscode.commands.registerCommand('cppBackup.retry',publish),
-    vscode.commands.registerCommand('cppBackup.showLog',()=>{output.show(true);}),
-    {dispose:()=>clearInterval(timer)}
+    vscode.commands.registerCommand('cppBackup.showLog',()=>{output.show(true);})
   );
-  const timer = setInterval(publish,60000);
-  output.appendLine('C++ Backup active for '+ROOT+'. Capturing every changed .cpp save; retry every 60 seconds.');
-  publish();
+  output.appendLine('C++ Backup manual mode: Ctrl+Alt+U saves and uploads. Ordinary saves do not create snapshots. Pending uploads retry on the next upload request.');
 }
 module.exports = {activate};
