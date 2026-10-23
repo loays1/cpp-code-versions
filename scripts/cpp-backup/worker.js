@@ -21,8 +21,13 @@ function log(message) {
   console.log(line);
 }
 function run(exe, args, input) {
+  // VS Code can retain the PATH from before Git was installed. Gitleaks invokes
+  // git by name internally, even though our own Git calls use an absolute path.
+  const env = {...process.env, GIT_TERMINAL_PROMPT:'0', GCM_INTERACTIVE:'never', GH_PROMPT_DISABLED:'1'};
+  const pathKey = Object.keys(env).find(key => key.toLowerCase() === 'path') || 'PATH';
+  env[pathKey] = path.dirname(config.git) + path.delimiter + (env[pathKey] || '');
   const result = spawnSync(exe, args, {cwd:root, input, encoding:'utf8', windowsHide:true, timeout:90000, maxBuffer:8*1024*1024,
-    env:{...process.env, GIT_TERMINAL_PROMPT:'0', GCM_INTERACTIVE:'never', GH_PROMPT_DISABLED:'1'}});
+    env});
   if (result.error) throw new Error('Process could not finish: ' + result.error.message);
   return result;
 }
@@ -93,7 +98,8 @@ try {
   const range = tracking.status === 0 ? tracking.stdout.trim() + '..HEAD' : 'HEAD';
   if (tracking.status !== 0 || tracking.stdout.trim() !== head) {
     const security = run(config.gitleaks, ['git','--no-banner','--redact','--exit-code','10','--log-opts='+range,'.']);
-    if (security.status !== 0) throw new Error('Outgoing history failed secret scanning; push blocked. Review locally with Gitleaks.');
+    if (security.status === 10) throw new Error('Possible secret detected in outgoing history; push blocked. Review locally with Gitleaks.');
+    if (security.status !== 0) throw new Error('Secret scanner could not run (exit ' + security.status + '): ' + (security.stderr || security.stdout).trim().slice(0,2000));
     log('Pushing queued commits...');
     git(['push','--porcelain',config.remote,'HEAD:refs/heads/' + config.branch]);
     log('GitHub push successful.');
